@@ -1,0 +1,202 @@
+""" There are maximum four budget categories listed below.
+User should use one of them with the corresponding name.
+a = Category("food")
+b = Category("clothing")
+c = Category("auto")
+d = Category("entertainment")  """
+
+import math
+
+
+class Category:
+    def __init__(self, name):
+        self.name = name
+        self.ledger = list()
+        self.deposit_total = 0
+        self.withdraw_total = 0
+        self.current_balance = 0
+
+    def deposit(self, amount, *description):
+        if amount > 0:
+            st = ''.join(str(item) for item in description)  # converting tuple into string
+            self.deposit_total += amount
+            explanation = f'\u007b"amount": {amount}, "description": {st}\u007d'
+            self.ledger.append(explanation)
+        else:
+            return ""
+
+    def withdraw(self, amount, *description):
+        if self.get_balance() >= amount > 0:
+            amount *= -1
+            st = ''.join(str(item) for item in description)  # converting tuple into string
+            explanation = f'\u007b"amount": {amount}, "description": {st}\u007d'
+            self.withdraw_total += (amount * -1)
+            self.ledger.append(explanation)
+        else:
+            print(bool(self.get_balance() >= amount > 0))
+
+    def get_balance(self):
+        self.current_balance = self.deposit_total - self.withdraw_total
+        return self.current_balance
+
+    def transfer(self, amount, budget_category):
+        if self.get_balance() >= amount > 0:
+            amount *= -1
+            self.ledger.append(f"{amount} Transfer to [{budget_category}]")
+            self.withdraw_total += (amount*-1)
+# updating second category
+            budget_category = budget_categories[budget_category]
+            amount *= -1
+            budget_category.ledger.append(f"{amount} Transfer from [{self.name}]")
+            budget_category.deposit_total += amount
+        else:
+            print(bool(self.get_balance() >= amount > 0))
+
+    def check_funds(self, amount):
+        if amount > self.get_balance():
+            print(bool(amount < 0))
+        else:
+            print(bool(amount > 0))
+
+    def print_budget(self):
+        print(self.name.center(30, "*"))  # header
+        amounts_list = list()
+        descriptions_list = list()
+# finding descriptions and amounts for budget print
+        for x in self.ledger:
+            x = str(x).replace("[", "").replace("]", "").replace("}", "")
+            if x.find("tion") > 0:
+                index1 = x.find("tion") + 7
+                descriptions_list.append(x[index1:])
+            else:
+                index2 = x.find(" ")
+                descriptions_list.append(x[(index2+1):])
+            if x.find("unt") > 0:
+                index_start = x.find("unt") + 6
+                index_finish = x.find(",")
+                amounts_list.append(x[index_start:index_finish])
+            else:
+                finish_index = x.find("Tran") - 1
+                amounts_list.append(x[:finish_index])
+        new_amount_list = list()  # amounts with 2 decimal places
+        for amn in amounts_list:
+            new_amounts = f"{float(amn):7.2f}"  # also possible with format() or %
+            new_amount_list.append(new_amounts)
+        count = 0
+        max_count = len(descriptions_list)
+        while count < max_count:  # printing the descriptions and amounts
+            print(f"{descriptions_list[count][:23].ljust(23)}{new_amount_list[count].rjust(7)}")
+            count += 1
+        print(f"Total: {self.get_balance()}")  # Total line
+
+
+a = Category("Food")
+b = Category("Clothing")
+c = Category("Auto")
+d = Category("Entertainment")
+budget_categories = {"Food": a, "Clothing": b, "Auto": c, "Entertainment": d}
+
+# sample records for check
+a.deposit(1000, "initial deposit")
+a.withdraw(10.15, "groceries")
+a.withdraw(15.89, "restaurant and more food")
+a.transfer(50, "Clothing")
+
+b.deposit(200, "first deposit")
+b.withdraw(110, "t-shirt")
+b.withdraw(13.5, "hat")
+b.transfer(36, "Auto")
+
+c.deposit(900, "first deposit")
+c.withdraw(276, "tire")
+c.withdraw(112.39, "wheel")
+
+a.print_budget()
+
+categories = ["Food", "Clothing", "Auto", "Entertainment"]
+
+
+def create_spend_chart(categories):
+    print("Percentage spent by category")  # header
+
+    new_cat_list = list(item for item in categories if budget_categories[item].withdraw_total != 0)
+
+    withdraws_ = list(budget_categories[x].withdraw_total for x in new_cat_list)
+
+    sum_of_withdraws = sum(withdraws_)
+    percentages = list(x/sum_of_withdraws * 100 for x in withdraws_)
+    percentages = list(math.floor(x / 10) * 10 for x in percentages)
+
+    percentages_main = list(range(0, 110, 10))
+
+    a = 0
+    cat_main = list()
+    for x in new_cat_list:
+        cat_bar = list()
+        if percentages[a] == 0:
+            cat_bar.append("o"*1)
+            cat_bar.append(" "*10)
+            cat_bar = "".join(cat_bar)
+            cat_bar = list(cat_bar)
+        else:
+            cat_bar_count = int(percentages[a] / 10)
+            cat_bar.append("o"*(cat_bar_count + 1))
+            cat_bar.append(" " * (11-len(cat_bar[0])))
+            cat_bar = "".join(cat_bar)
+            cat_bar = list(cat_bar)
+        a += 1
+        cat_main.append(cat_bar)
+    cat_main = cat_main
+    number_of_indexes = len(cat_main)
+    a = 10
+    for x in percentages_main[::-1]:
+        if number_of_indexes == 0:
+            print(f"{str(x).rjust(3)}|")
+        elif number_of_indexes == 1:
+            print(f"{str(x).rjust(3)}| {cat_main[0][a]}")
+        elif number_of_indexes == 2:
+            print(f"{str(x).rjust(3)}| {cat_main[0][a]} {cat_main[1][a]}")
+        elif number_of_indexes == 3:
+            print(f"{str(x).rjust(3)}| {cat_main[0][a]} {cat_main[1][a]} {cat_main[2][a]}")
+        elif number_of_indexes == 4:
+            print(f"{str(x).rjust(3)}| {cat_main[0][a]} {cat_main[1][a]} {cat_main[2][a]} {cat_main[3][a]}")
+        else:
+            return ""
+        a -= 1
+
+    dashes_number = (number_of_indexes + (number_of_indexes - 1) + 3)
+    print("   ", "_"*dashes_number)
+
+    max_list = list()
+    for x in new_cat_list:
+        max_list.append(len(x))
+    max_no = max(max_list)  # longest category name
+
+    a = 0
+    cat_l_fin = list()
+    for y in new_cat_list:
+        if len(y) != 8:
+            item = new_cat_list[a]
+            extra = " "*(8 - len(y))
+            final_item = item + extra
+            cat_l_fin.append(final_item)
+            a += 1
+        else:
+            item = new_cat_list[a]
+            cat_l_fin.append(item)
+            a += 1
+    index_number_cat = len(new_cat_list)
+    for x in range(max_no):
+        if index_number_cat == 1:
+            print(f"\t {cat_l_fin[0][x]}")
+        elif index_number_cat == 2:
+            print(f"\t {cat_l_fin[0][x]} {cat_l_fin[1][x]}")
+        elif index_number_cat == 3:
+            print(f"\t {cat_l_fin[0][x]} {cat_l_fin[1][x]} {cat_l_fin[2][x]}")
+        elif index_number_cat == 4:
+            print(f"\t {cat_l_fin[0][x]} {cat_l_fin[1][x]} {cat_l_fin[2][x]} {cat_l_fin[3][x]}")
+        else:
+            return ""
+
+
+create_spend_chart(categories)
